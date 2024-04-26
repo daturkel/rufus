@@ -159,6 +159,7 @@ def test_resultset_eq():
     assert RS_A == ResultSet(np.array([0, 1, 2, 3]), np.array([0.0, 0.1, 0.2, 0.3]))
     assert RS_A != ResultSet(np.array([0, 1, 2, 3]), np.array([0.0, 0.1, 0.2, 0.4]))
     assert RS_A != ResultSet(np.array([0, 1, 2, 4]), np.array([0.0, 0.1, 0.2, 0.3]))
+    assert RS_A != 1
 
 
 def test_resultset_sort():
@@ -175,3 +176,35 @@ def test_resultset_reverse():
     reversed_ = RS_A.reverse()
     assert (reversed_.indices == np.array([3, 2, 1, 0])).all()
     assert (reversed_.scores == np.array([0.3, 0.2, 0.1, 0])).all()
+
+
+def test_resultset_iter():
+    iterated = list(iter(RS_A))
+    assert iterated == [(0, 0.0), (1, 0.1), (2, 0.2), (3, 0.3)]
+
+
+def test_resultset_max_scale():
+    max_scaled = RS_A.max_scale()
+    assert _match_indices_and_scores(
+        max_scaled, RS_A.indices, np.array([0, 1 / 3, 2 / 3, 1]), close=True
+    )
+
+
+def test_resultset_lt():
+    lt = RS_A.lt(0.2)
+    assert lt == ResultSet([0, 1], [0, 0.1])
+
+
+def test_resultset_leq():
+    lt = RS_A.leq(0.2)
+    assert lt == ResultSet([0, 1, 2], [0, 0.1, 0.2])
+
+
+def test_resultset_gt():
+    lt = RS_A.gt(0.2)
+    assert lt == ResultSet([3], [0.3])
+
+
+def test_resultset_geq():
+    lt = RS_A.geq(0.2)
+    assert lt == ResultSet([2, 3], [0.2, 0.3])
