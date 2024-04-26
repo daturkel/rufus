@@ -8,6 +8,7 @@
 .benchmarks
 *.json
 *.gz
+.pdm-python
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
