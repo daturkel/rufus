@@ -1,7 +1,13 @@
 # Custom
+.DS_Store
 .python-version
 *.pickle
 .vscode/
+.env
+.htmlcov
+.benchmarks
+*.json
+*.gz
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
