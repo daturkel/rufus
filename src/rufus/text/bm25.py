@@ -29,8 +29,7 @@ class BM25Index:
             scores = self._index.get_scores(query)
             indices = np.arange(self.n_items)
 
-        sort = np.argsort(-scores)
-        return ResultSet(indices[sort], scores[sort])
+        return ResultSet(indices, scores)
 
 
 class OkapiBM25Index(BM25Index):
