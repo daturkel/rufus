@@ -5,7 +5,7 @@ from rank_bm25 import BM25, BM25L, BM25Okapi, BM25Plus
 from .. import ResultSet
 
 
-class BM25Index:
+class BM25IndexBase:
     def __init__(
         self,
         items: list[list[str]],
@@ -32,7 +32,7 @@ class BM25Index:
         return ResultSet(indices, scores)
 
 
-class OkapiBM25Index(BM25Index):
+class OkapiBM25Index(BM25IndexBase):
     def __init__(
         self,
         items: list[list[str]],
@@ -51,7 +51,7 @@ class OkapiBM25Index(BM25Index):
         return BM25Okapi(corpus, k1=k1, b=b, epsilon=eps)
 
 
-class BM25LIndex(BM25Index):
+class BM25LIndex(BM25IndexBase):
     def __init__(
         self,
         items: list[list[str]],
@@ -70,7 +70,7 @@ class BM25LIndex(BM25Index):
         return BM25L(corpus, k1=k1, b=b, delta=delta)
 
 
-class BM25PlusIndex(BM25Index):
+class BM25PlusIndex(BM25IndexBase):
     def __init__(
         self,
         items: list[list[str]],
