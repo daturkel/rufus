@@ -47,7 +47,7 @@ class NearestNeighborsIndex:
             NotImplementedError: Not implemented for the base class.
 
         Returns:
-            An instance of `NearestNeighborsResult` containing the nearest neighbors to the query.
+            An `ResultSet` containing the nearest neighbors to the query.
         """
         raise NotImplementedError
 
@@ -146,7 +146,7 @@ class ExactNearestNeighborsIndex(NearestNeighborsIndex):
             top_k: Number of results to return. If `None`, return all results. Defaults to 100.
 
         Returns:
-            An instance of `NearestNeighborsResult` containing the nearest neighbors to the query.
+            An `ResultSet` containing the nearest neighbors to the query.
         """
         vector = self.index[index]
         results = self.get_nearest_neighbors(vector, top_k)

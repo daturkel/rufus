@@ -97,7 +97,7 @@ class VoyagerNearestNeighborsIndex(NearestNeighborsIndex):
             top_k: Number of results to return. If `None`, return all results. Defaults to 100.
 
         Returns:
-            An instance of `NearestNeighborsResult` containing the nearest neighbors to the query.
+            An `ResultSet` containing the nearest neighbors to the query.
         """
         vector = self.index.get_vector(index)
         return self.get_nearest_neighbors(vector=vector, top_k=top_k, query_ef=-1)
@@ -115,7 +115,7 @@ class VoyagerNearestNeighborsIndex(NearestNeighborsIndex):
                 per query vector. Defaults to -1.
 
         Returns:
-            An instance of `NearestNeighborsResult` containing the nearest neighbors to the query.
+            An `ResultSet` containing the nearest neighbors to the query.
         """
         if top_k is None:
             top_k = self._vectors.shape[0]
