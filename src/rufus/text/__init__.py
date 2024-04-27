@@ -51,7 +51,7 @@ class TextPipeline:
 
         return result
 
-    def batch(self, iterable) -> Any:
+    def batch(self, iterable) -> list[Any]:
         """Run the pipeline on an iterable of text inputs and return a list of the outputs.
 
         Args:

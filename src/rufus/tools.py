@@ -24,7 +24,7 @@ def reciprocal_rank_fusion(
             rankdata(ascending * result_set.scores, rank_type), result_set.indices
         ):
             scores_dict[index] += 1 / (k + rank)
-    indices = np.array(list(scores_dict.keys()))
+    indices = np.array(list(scores_dict.keys()), dtype=int)
     scores = np.array(list(scores_dict.values()))
 
     return ResultSet(indices=indices, scores=scores).sort()
