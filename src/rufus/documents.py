@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+import pickle
 from collections.abc import Sequence
-from typing import Any
+from typing import Any, Self
 
 import numpy as np
 import numpy.typing as npt
@@ -10,10 +11,10 @@ from sqlite_utils import Database
 
 from . import ResultSet
 
-__all__ = ["DocumentIndex", "PandasIndex", "SequenceIndex", "SqliteIndex"]
+__all__ = ["DocumentIndexBase", "PandasIndex", "SequenceIndex", "SqliteIndex"]
 
 
-class DocumentIndex:
+class DocumentIndexBase:
     def __init__(self):
         pass
 
@@ -25,11 +26,19 @@ class DocumentIndex:
         raise NotImplementedError()
 
     def save(self, filename: str):
-        raise NotImplementedError()
+        with open(filename, "wb") as f:
+            pickle.dump(self, f)
+
+    @classmethod
+    def load(cls, filename: str) -> Self:
+        with open(filename, "rb") as f:
+            obj = pickle.load(f)
+        return obj
 
 
-class PandasIndex:
+class PandasIndex(DocumentIndexBase):
     def __init__(self, dataframe: pd.DataFrame):
+        super().__init__()
         self.index = dataframe
 
     def get_documents(

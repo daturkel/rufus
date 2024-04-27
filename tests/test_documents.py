@@ -1,14 +1,14 @@
 import pandas as pd
 import pytest
 from rufus import ResultSet
-from rufus.documents import DocumentIndex, PandasIndex, SequenceIndex
+from rufus.documents import DocumentIndexBase, PandasIndex, SequenceIndex
 
 DF = pd.DataFrame({"foo": ["bar", "baz", "bal"], "fee": ["fi", "fo", "fum"]})
 SEQUENCE = [("a", 123), ("b", 456), ("c", 789)]
 
 
 def test_document_index_not_implemented():
-    di = DocumentIndex()
+    di = DocumentIndexBase()
     with pytest.raises(NotImplementedError):
         di.get_documents([1])
 
