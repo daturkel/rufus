@@ -5,6 +5,7 @@ from rufus import ResultSet
 
 RS_A = ResultSet(np.array([0, 1, 2, 3]), np.array([0.0, 0.1, 0.2, 0.3]))
 RS_B = ResultSet(np.array([5, 3, 4]), np.array([0.5, 0.6, 0.7]))
+RS_C = ResultSet(np.array([0, 1, 3, 4]), np.array([0.0, -0.1, 0.3, 0.2]))
 
 
 def _match_indices_and_scores(
@@ -25,7 +26,7 @@ def test_resultset_to_dataframe():
     assert df.columns == ["scores"]
 
 
-def test_resultset_top():
+def test_resultset_first():
     top = RS_A.first(2)
     assert _match_indices_and_scores(top, np.array([0, 1]), np.array([0, 0.1]))
 
@@ -117,21 +118,17 @@ def test_resultset_len():
 def test_resultset_sub_rs():
     rs_sub = RS_A - RS_B
     assert _match_indices_and_scores(
-        rs_sub, np.array([0, 1, 2]), np.array([0, 0.1, 0.2])
+        rs_sub,
+        np.array([0, 1, 2, 3, 4, 5]),
+        np.array([0.0, 0.1, 0.2, 0.3 - 0.6, -0.7, -0.5]),
+        close=True,
     )
 
 
-def test_resultset_sub_list():
-    rs_sub = RS_A - [0, 5]
+def test_resultset_sub_constant():
+    rs_sub = RS_A - 5
     assert _match_indices_and_scores(
-        rs_sub, np.array([1, 2, 3]), np.array([0.1, 0.2, 0.3])
-    )
-
-
-def test_resultset_sub_array():
-    rs_sub = RS_A - np.array([0, 5])
-    assert _match_indices_and_scores(
-        rs_sub, np.array([1, 2, 3]), np.array([0.1, 0.2, 0.3])
+        rs_sub, np.array([0, 1, 2, 3]), np.array([-5, 0.1 - 5, 0.2 - 5, 0.3 - 5])
     )
 
 
@@ -190,6 +187,16 @@ def test_resultset_max_scale():
     )
 
 
+def test_resultset_min_max_scale():
+    min_max_scaled = RS_C.min_max_scale()
+    assert _match_indices_and_scores(
+        min_max_scaled,
+        np.array([0, 1, 3, 4]),
+        np.array([1 / 4, 0, 1, 3 / 4]),
+        close=True,
+    )
+
+
 def test_resultset_lt():
     lt = RS_A.lt(0.2)
     assert lt == ResultSet([0, 1], [0, 0.1])
@@ -208,3 +215,25 @@ def test_resultset_gt():
 def test_resultset_geq():
     lt = RS_A.geq(0.2)
     assert lt == ResultSet([2, 3], [0.2, 0.3])
+
+
+def test_top():
+    top = RS_A.top(2)
+    assert top == ResultSet([3, 2], [0.3, 0.2])
+
+
+def test_bottom():
+    top = RS_A.bottom(2)
+    assert top == ResultSet([0, 1], [0, 0.1])
+
+
+def test_set_minus():
+    diff = RS_A.set_minus(RS_B)
+    assert diff == ResultSet([0, 1, 2], [0, 0.1, 0.2])
+
+
+def test_rerank():
+    reranked = RS_A.rerank(RS_C)
+    assert _match_indices_and_scores(
+        reranked, np.array([3, 0, 1]), np.array([0.3, 0.0, -0.1]), close=True
+    )

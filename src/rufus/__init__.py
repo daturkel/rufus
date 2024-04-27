@@ -8,13 +8,14 @@ import pandas as pd
 
 
 class ResultSet:
-    """A container for document indices and and scores."""
+    """A container for document indices and scores."""
 
     def __init__(self, indices: npt.ArrayLike, scores: npt.ArrayLike):
-        """Create an object that stores indices and scores corresponding to a query.
+        """Create an object that stores indices and scores.
 
         Args:
-            indices: A list or numpy array of integers.
+            indices: A array-like collection of unique integers, likely corresponding to
+                indices in a `DocumentArray`.
             scores: The scores corresponding to the indexed items.
         """
         self.indices = np.asarray(indices)
@@ -23,7 +24,8 @@ class ResultSet:
         # The scores that correspond to the results.
 
     def __getitem__(self, key) -> ResultSet:
-        """Get a `ResultSet` resulting from passing `key` to __getitem__ of `indices` and `scores`.
+        """Index a `ResultSet` to return a sub-`ResultSet`. The key can be any object that
+        can be used for indexing a numpy array.
 
         Args:
             key: An indexing object (integer, slice, mask).
@@ -45,7 +47,8 @@ class ResultSet:
         return zip(self.indices, self.scores)
 
     def to_dataframe(self) -> pd.DataFrame:
-        """Convert the `ResultSet` to a Pandas dataframe with a `scores` column and an index set from `indices`.
+        """Convert the `ResultSet` to a Pandas dataframe with a `scores` column and an
+        index set from `indices`.
 
         Returns:
             A Pandas dataframe with a `scores` column and an index set from `indices`.
@@ -54,10 +57,12 @@ class ResultSet:
 
     @classmethod
     def from_dataframe(cls, df: pd.DataFrame) -> ResultSet:
-        """Create a `ResultSet` from a Pandas dataframe with a column called `scores` and an index.
+        """Create a `ResultSet` from a Pandas dataframe with a column called `scores` and
+        an integer index.
 
         Args:
-            df: The Pandas dataframe. Must have a `scores` column and an integer index. All other columns are ignored.
+            df: The Pandas dataframe. Must have a `scores` column and an integer index.
+                All other columns are ignored.
 
         Returns:
             A `ResultSet` with `indices` and `scores` derived from the dataframe.
@@ -82,7 +87,7 @@ class ResultSet:
             ascending: If `True`, sort from lowest to highest scores. Defaults to False.
 
         Returns:
-            A `ResultSet` with the same contents as this one, but with contents sorted by score.
+            A `ResultSet` with the same contents as this one, with contents sorted by score.
         """
         return ResultSet.from_dataframe(
             self.to_dataframe().sort_values("scores", ascending=ascending)
@@ -96,6 +101,16 @@ class ResultSet:
         """
         max_score = self.scores.max()
         return self / max_score
+
+    def min_max_scale(self) -> ResultSet:
+        """Shift all scores so that the minimum score is 0, then scale scores so the
+        maximum score is 1.
+
+        Returns:
+            A new ResultSet object with the scores scaled between 0 and 1.
+        """
+        min_score = self.scores.min()
+        return (self - min_score).max_scale()
 
     def lt(self, val: float = 0) -> ResultSet:
         """Filter the result set to items with scores less than `val`.
@@ -209,8 +224,9 @@ class ResultSet:
     def __radd__(self, other: ResultSet | float) -> ResultSet:
         return self.__add__(other)
 
-    def __sub__(self, other: ResultSet | npt.ArrayLike) -> ResultSet:
-        """Subtract a constant or another `ResultSet`'s scores to this `ResultSet`. If adding another `ResultSet`, missing items will be coalesced to 0.
+    def __sub__(self, other: ResultSet | float) -> ResultSet:
+        """Subtract a constant or another `ResultSet`'s scores from this `ResultSet`. If
+        subtracting another `ResultSet`, missing items will be coalesced to 0 on both sides.
 
         Args:
             other: A float or another `ResultSet` to subtract from this one.
@@ -218,11 +234,7 @@ class ResultSet:
         Returns:
             A `ResultSet` with scores that are the difference of the original `ResultSet` and `other`.
         """
-        if isinstance(other, ResultSet):
-            index_difference = ~np.in1d(self.indices, other.indices)
-        else:
-            index_difference = ~np.in1d(self.indices, other)
-        return ResultSet(self.indices[index_difference], self.scores[index_difference])
+        return self.__add__(-other)
 
     def __contains__(self, item: int) -> bool:
         """Check if an integer is in `indices`.
@@ -269,18 +281,32 @@ class ResultSet:
         return ResultSet(indices, scores)
 
     def __and__(self, other: ResultSet) -> ResultSet:
-        """Create a `ResultSet` that is the intersection of this and `other`. The score of this `ResultSet` will be preferred over the score from `Other`.
+        """Create a `ResultSet` that is the intersection of this and `other`, maintaining
+        the scores of this `ResultSet`.
 
         Args:
             other: Another `ResultSet`.
 
         Returns:
-            A new `ResultSet` with all the `indices` in both this and `other`, and the scores from this (if they exist) or else from `other`.
+            A new `ResultSet` with all the `indices` in both this and `other`, and the scores
+            from this `ResultSet`.
         """
         index_intersection = np.in1d(self.indices, other.indices)
         return ResultSet(
             self.indices[index_intersection], self.scores[index_intersection]
         )
+
+    def set_minus(self, other: ResultSet) -> ResultSet:
+        """Remove any index not present in `other`.
+
+        Args:
+            other: Another `ResultSet` whose indices will be removed from this one.
+
+        Returns:
+            A `ResultSet` containing the set difference between this and `other`.
+        """
+        index_difference = np.in1d(self.indices, other.indices, invert=True)
+        return ResultSet(self.indices[index_difference], self.scores[index_difference])
 
     def __eq__(self, other) -> bool:
         """Check whether the indices and scores in this `ResultSet` are the same, in the same order, as those in `other`.
@@ -298,3 +324,42 @@ class ResultSet:
                 np.array(self.scores == other.scores).all()
                 and np.array(self.indices == other.indices).all()
             )
+
+    def top(self, k: int) -> ResultSet:
+        """Return the top scoring results, sorted descending.
+
+        Args:
+            k: Number of results to return.
+
+        Returns:
+            A sorted `ResultSet` with the highest `k` scores.
+        """
+        top_indices = np.argpartition(-self.scores, k)[:k]
+        return ResultSet(self.indices[top_indices], self.scores[top_indices])
+
+    def bottom(self, k: int) -> ResultSet:
+        """Return the bottom scoring results, sorted ascending.
+
+        Args:
+            k: Number of results to return.
+
+        Returns:
+            A sorted `ResultSet` with the lowest `k` scores.
+        """
+        bottom_indices = np.argpartition(self.scores, k)[:k]
+        return ResultSet(self.indices[bottom_indices], self.scores[bottom_indices])
+
+    def rerank(self, other: ResultSet, ascending: bool = False) -> ResultSet:
+        """Return a `ResultSet` featuring indices in the intersection of this and `other`,
+        sorted by the scores of `other`.
+
+        Args:
+            other: The `ResultSet` whose scores will be used to rerank.
+            ascending: If `True`, sort from lowest to highest scores. Defaults to False.
+
+        Returns:
+            The `ResultSet` containing the intersection of this and `Other`, sorted by the
+            scores of `other`.
+        """
+        intersection = other & self
+        return intersection.sort(ascending)
