@@ -54,7 +54,8 @@ class NearestNeighborsIndex:
     def get_nearest_neighbors_from_existing(
         self, index: int, top_k: int | None = 100
     ) -> ResultSet:
-        """Same as `nearest`, but takes an `index` argument indicating to look up an existing known vector.
+        """Same as `get_nearest_neighbors`, but takes an `index` argument indicating to
+        look up an existing known vector.
 
         Args:
             index: The index of the vector to query.
@@ -137,7 +138,8 @@ class ExactNearestNeighborsIndex(NearestNeighborsIndex):
     def get_nearest_neighbors_from_existing(
         self, index: int, top_k: int | None = 100
     ) -> ResultSet:
-        """Same as `nearest`, but takes an `index` argument indicating to look up an existing known vector.
+        """Same as `get_nearest_neighbors`, but takes an `index` argument indicating to
+        look up an existing known vector.
 
         Args:
             index: The index of the vector to query.
