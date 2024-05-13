@@ -22,8 +22,8 @@ def _match_indices_and_scores(
 def test_resultset_to_dataframe():
     df = RS_A.to_dataframe()
     assert np.array(df.index.values == RS_A.indices).all()
-    assert np.array(df["scores"].values == RS_A.scores).all()
-    assert df.columns == ["scores"]
+    assert np.array(df["score"].values == RS_A.scores).all()
+    assert df.columns == ["score"]
 
 
 def test_resultset_first():
@@ -32,7 +32,7 @@ def test_resultset_first():
 
 
 def test_resultset_from_dataframe():
-    df = pd.DataFrame({"scores": [0.1, 0.2, 0.3]}, index=[3, 1, 5])
+    df = pd.DataFrame({"score": [0.1, 0.2, 0.3]}, index=[3, 1, 5])
     rs = ResultSet.from_dataframe(df)
     assert _match_indices_and_scores(rs, np.array([3, 1, 5]), np.array([0.1, 0.2, 0.3]))
 

@@ -53,7 +53,7 @@ class ResultSet:
         Returns:
             A Pandas dataframe with a `scores` column and an index set from `indices`.
         """
-        return pd.DataFrame({"scores": self.scores}, index=self.indices)
+        return pd.DataFrame({"score": self.scores}, index=self.indices)
 
     @classmethod
     def from_dataframe(cls, df: pd.DataFrame) -> ResultSet:
