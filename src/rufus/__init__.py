@@ -67,7 +67,7 @@ class ResultSet:
         Returns:
             A `ResultSet` with `indices` and `scores` derived from the dataframe.
         """
-        return ResultSet(df.index.values, df["scores"].values)  # type: ignore
+        return ResultSet(df.index.values, df["score"].values)  # type: ignore
 
     def first(self, k: int) -> ResultSet:
         """Get the first `k` items from the `ResultSet`.
@@ -90,7 +90,7 @@ class ResultSet:
             A `ResultSet` with the same contents as this one, with contents sorted by score.
         """
         return ResultSet.from_dataframe(
-            self.to_dataframe().sort_values("scores", ascending=ascending)
+            self.to_dataframe().sort_values("score", ascending=ascending)
         )
 
     def max_scale(self) -> ResultSet:
