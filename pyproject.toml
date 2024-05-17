@@ -53,6 +53,11 @@ dev = [
     "pytest-mock>=3.14.0",
     "ruff>=0.4.4"
 ]
+
+[tool.pdm.scripts]
+test = "pytest ."
+lint = "ruff --output-format=github"
+
 [tool.pytest.ini_options]
 addopts = [
     "--cov=src",

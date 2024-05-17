@@ -21,8 +21,8 @@ jobs:
           pdm install -d
       - name: Ruff linting
         run: |
-          ruff --output-format=github
+          pdm run lint
         continue-on-error: true
       - name: Test with pytest
         run: |
-          pytest .
+          pdm run test
